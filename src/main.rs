@@ -6,10 +6,10 @@ use story::Comment;
 use story::StoryPageData;
 use tracing::Level;
 
+pub mod error;
 pub mod fetching_data;
 pub mod story;
 
-use story::StoryItem;
 use story::StoryListing;
 
 fn main() {

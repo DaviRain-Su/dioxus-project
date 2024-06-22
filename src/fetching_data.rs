@@ -1,8 +1,5 @@
-use std::process::Command;
-
-use futures::future::join_all;
-
 use crate::story::{Comment, StoryItem, StoryPageData};
+use futures::future::join_all;
 
 pub static BASE_API_URL: &str = "https://hacker-news.firebaseio.com/v0/";
 pub static ITEM_API: &str = "item/";

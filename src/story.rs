@@ -85,7 +85,7 @@ async fn resolve_story(
 
 #[component]
 pub fn StoryListing(story: ReadOnlySignal<StoryItem>) -> Element {
-    let mut preview_state = consume_context::<Signal<PreviewState>>();
+    let preview_state = consume_context::<Signal<PreviewState>>();
     let StoryItem {
         title,
         by,
