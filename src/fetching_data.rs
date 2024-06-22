@@ -1,3 +1,4 @@
+use crate::error::Error;
 use crate::story::{Comment, StoryItem, StoryPageData};
 use futures::future::join_all;
 
@@ -6,12 +7,16 @@ pub static ITEM_API: &str = "item/";
 pub static USER_API: &str = "user/";
 const COMMENT_DEPTH: i64 = 2;
 
-pub async fn get_story_preview(id: i64) -> Result<StoryItem, reqwest::Error> {
+pub async fn get_story_preview(id: i64) -> anyhow::Result<StoryItem> {
     let url = format!("{}{}{}.json", BASE_API_URL, ITEM_API, id);
-    reqwest::get(&url).await?.json().await
+    reqwest::get(&url)
+        .await?
+        .json()
+        .await
+        .map_err(|e| Error::ReqwestError(e).into())
 }
 
-pub async fn get_stories(count: usize) -> Result<Vec<StoryItem>, reqwest::Error> {
+pub async fn get_stories(count: usize) -> anyhow::Result<Vec<StoryItem>> {
     let url = format!("{}topstories.json", BASE_API_URL);
     let stories_ids = &reqwest::get(&url).await?.json::<Vec<i64>>().await?[..count];
 
@@ -26,7 +31,7 @@ pub async fn get_stories(count: usize) -> Result<Vec<StoryItem>, reqwest::Error>
     Ok(stories)
 }
 
-pub async fn get_story(id: i64) -> Result<StoryPageData, reqwest::Error> {
+pub async fn get_story(id: i64) -> anyhow::Result<StoryPageData> {
     let url = format!("{}{}{}.json", BASE_API_URL, ITEM_API, id);
     let mut story = reqwest::get(&url).await?.json::<StoryPageData>().await?;
     let comment_future = story.item.kids.iter().map(|&id| get_comment(id));
@@ -41,7 +46,7 @@ pub async fn get_story(id: i64) -> Result<StoryPageData, reqwest::Error> {
 }
 
 #[async_recursion::async_recursion(?Send)]
-pub async fn get_comment_with_depth(id: i64, depth: i64) -> Result<Comment, reqwest::Error> {
+pub async fn get_comment_with_depth(id: i64, depth: i64) -> anyhow::Result<Comment> {
     let url = format!("{}{}{}.json", BASE_API_URL, ITEM_API, id);
     let mut comment = reqwest::get(&url).await?.json::<Comment>().await?;
     if depth > 0 {
@@ -59,7 +64,7 @@ pub async fn get_comment_with_depth(id: i64, depth: i64) -> Result<Comment, reqw
     Ok(comment)
 }
 
-pub async fn get_comment(comment_id: i64) -> Result<Comment, reqwest::Error> {
+pub async fn get_comment(comment_id: i64) -> anyhow::Result<Comment> {
     let comment = get_comment_with_depth(comment_id, COMMENT_DEPTH).await?;
     Ok(comment)
 }
